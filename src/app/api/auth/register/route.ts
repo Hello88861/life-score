@@ -27,7 +27,9 @@ export async function POST(req: NextRequest) {
     })
 
     return NextResponse.json({ id: user.id, email: user.email }, { status: 201 })
-  } catch {
-    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+  } catch (e) {
+    console.error('[register error]', e)
+    const msg = e instanceof Error ? e.message : String(e)
+    return NextResponse.json({ error: 'Server error', detail: msg }, { status: 500 })
   }
 }
