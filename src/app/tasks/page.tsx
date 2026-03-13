@@ -154,7 +154,7 @@ export default function TasksPage() {
             <select value={newCat} onChange={e => setNewCat(e.target.value)}
               className="rounded-xl px-3 py-2 text-xs outline-none capitalize flex-1"
               style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.6)' }}>
-              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+              {CATEGORIES.map(c => <option key={c} value={c} style={{ background: '#000000', color: 'white' }}>{c}</option>)}
             </select>
           </div>
 
