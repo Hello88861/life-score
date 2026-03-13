@@ -15,6 +15,7 @@ const DIMS = [
   { key: 'readingScore', label: 'Reading', icon: '📖' },
   { key: 'learningScore', label: 'Learning', icon: '🧠' },
 ] as const
+type DimKey = typeof DIMS[number]['key']
 
 function MiniBar({ value }: { value: number }) {
   const color = value >= 8 ? '#34d399' : value >= 6 ? '#fbbf24' : '#f87171'
@@ -117,7 +118,7 @@ export default function HistoryPage() {
                         <span className="text-base w-5">{dim.icon}</span>
                         <span className="text-xs text-white/50 w-20">{dim.label}</span>
                         <div className="flex-1">
-                          <MiniBar value={record[dim.key] as number} />
+                          <MiniBar value={record[dim.key as DimKey] as number} />
                         </div>
                       </div>
                     ))}
