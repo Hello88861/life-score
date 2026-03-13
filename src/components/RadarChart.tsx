@@ -1,14 +1,7 @@
 'use client'
 
-import {
-  RadarChart as RechartsRadar, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip,
-} from 'recharts'
+import { RadarChart as RechartsRadar, Radar, PolarGrid, PolarAngleAxis, ResponsiveContainer, Tooltip } from 'recharts'
 import type { DailyRecord } from '@/types'
-
-const LABELS: Record<string, string> = {
-  sleep: 'Sleep', water: 'Water', discipline: 'Discipline',
-  exercise: 'Exercise', reading: 'Reading', learning: 'Learning',
-}
 
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
@@ -23,9 +16,14 @@ const CustomTooltip = ({ active, payload }: any) => {
 }
 
 export function RadarChartComp({ record }: { record: DailyRecord }) {
-  const data = Object.entries(LABELS).map(([key, name]) => ({
-    name, value: record[key as keyof DailyRecord] as number, fullMark: 10,
-  }))
+  const data = [
+    { name: 'Sleep',      value: record.sleepScore },
+    { name: 'Water',      value: record.waterScore },
+    { name: 'Exercise',   value: record.exerciseScore },
+    { name: 'Reading',    value: record.readingScore },
+    { name: 'Learning',   value: record.learningScore },
+    { name: 'Discipline', value: record.disciplineScore },
+  ].map(d => ({ ...d, fullMark: 10 }))
 
   return (
     <ResponsiveContainer width="100%" height={220}>

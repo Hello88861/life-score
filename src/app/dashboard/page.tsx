@@ -6,20 +6,17 @@ import { useRouter } from 'next/navigation'
 import { NavBar } from '@/components/NavBar'
 import { TrendChart } from '@/components/TrendChart'
 import { RadarChartComp } from '@/components/RadarChart'
-import { getScoreColor, getScoreLabel } from '@/lib/weights'
+import { getScoreColor, getScoreLabel } from '@/lib/scoring'
 import type { DailyRecord } from '@/types'
 
 function ScoreRing({ score, size = 120 }: { score: number; size?: number }) {
-  const color = score >= 8 ? '#34d399' : score >= 6 ? '#fbbf24' : '#f87171'
-  const r = 44
-  const circ = 2 * Math.PI * r
-  const dash = (score / 10) * circ
-
+  const color = getScoreColor(score)
+  const r = 44, circ = 2 * Math.PI * r, dash = (score / 10) * circ
   return (
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" />
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="8"
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" />
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth="8"
           strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
           style={{ filter: `drop-shadow(0 0 8px ${color})`, transition: 'stroke-dasharray 0.6s ease' }} />
       </svg>
@@ -43,30 +40,29 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (status !== 'authenticated') return
-    fetch('/api/records?days=30')
-      .then((r) => r.json())
-      .then((data) => { setRecords(data); setLoading(false) })
+    fetch('/api/records?days=30').then(r => r.json())
+      .then(data => { setRecords(data); setLoading(false) })
   }, [status])
 
   if (status === 'loading' || loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-10 h-10 rounded-full border-2 border-indigo-400 border-t-transparent animate-spin" />
-      </div>
-    )
+    return <div className="min-h-screen flex items-center justify-center">
+      <div className="w-10 h-10 rounded-full border-2 border-indigo-400 border-t-transparent animate-spin" />
+    </div>
   }
 
   const latest = records[records.length - 1]
-  const avg = records.length
-    ? Math.round((records.reduce((s, r) => s + r.totalScore, 0) / records.length) * 10) / 10 : 0
-  const user = session?.user as any
   const todayLogged = latest && new Date(latest.date).toDateString() === new Date().toDateString()
+  const avg = records.length
+    ? Math.round(records.reduce((s, r) => s + r.totalScore, 0) / records.length * 10) / 10 : 0
+  const user = session?.user as any
+
+  // Radar data from latest record
+  const radarRecord = todayLogged ? latest : null
 
   return (
     <div className="min-h-screen pb-28 pt-20 px-4 max-w-lg mx-auto">
       <NavBar />
 
-      {/* Background orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 right-0 w-72 h-72 rounded-full opacity-10"
           style={{ background: 'radial-gradient(circle, #6366f1, transparent)' }} />
@@ -74,11 +70,8 @@ export default function DashboardPage() {
           style={{ background: 'radial-gradient(circle, #8b5cf6, transparent)' }} />
       </div>
 
-      {/* Header */}
       <div className="mb-6 relative z-10">
-        <p className="text-white/40 text-sm">
-          {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-        </p>
+        <p className="text-white/40 text-sm">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
         <h2 className="text-2xl font-bold text-white mt-0.5">Hello, {user?.name} 👋</h2>
       </div>
 
@@ -86,14 +79,14 @@ export default function DashboardPage() {
         <div className="glass p-8 text-center relative z-10">
           <p className="text-5xl mb-4">🌱</p>
           <p className="text-white font-semibold text-lg">Start your journey</p>
-          <p className="text-white/40 text-sm mt-1 mb-6">Log your first day to unlock insights</p>
-          <button onClick={() => router.push('/daily')} className="btn-primary">Log Today's Habits</button>
+          <p className="text-white/40 text-sm mt-1 mb-6">Set your goals first, then log your first day</p>
+          <button onClick={() => router.push('/settings')} className="btn-primary mb-3">Set Goals</button>
+          <button onClick={() => router.push('/daily')} className="btn-secondary text-white/60 text-sm py-2">Log Today</button>
         </div>
       ) : (
         <div className="space-y-4 relative z-10">
           {/* Score cards */}
           <div className="grid grid-cols-2 gap-3">
-            {/* Today */}
             <div className="glass p-5 flex flex-col items-center">
               <p className="text-white/40 text-xs font-medium uppercase tracking-wider mb-3">Today</p>
               {todayLogged ? (
@@ -102,28 +95,45 @@ export default function DashboardPage() {
                   <p className="text-xs font-semibold mt-3" style={{ color: getScoreColor(latest.totalScore) }}>
                     {getScoreLabel(latest.totalScore)}
                   </p>
+                  <p className="text-xs text-white/25 mt-1">×{latest.disciplineMultiplier} discipline</p>
                 </>
               ) : (
-                <div className="flex flex-col items-center">
-                  <div className="w-20 h-20 rounded-full flex items-center justify-center mb-2"
+                <div className="flex flex-col items-center py-2">
+                  <div className="w-20 h-20 rounded-full flex items-center justify-center mb-3"
                     style={{ border: '2px dashed rgba(255,255,255,0.15)' }}>
                     <span className="text-2xl">✦</span>
                   </div>
                   <button onClick={() => router.push('/daily')}
-                    className="text-xs text-indigo-400 hover:text-indigo-300 mt-1 transition-colors">
+                    className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors">
                     Log now →
                   </button>
                 </div>
               )}
             </div>
 
-            {/* 30-day avg */}
             <div className="glass p-5 flex flex-col items-center">
               <p className="text-white/40 text-xs font-medium uppercase tracking-wider mb-3">30-Day Avg</p>
               <ScoreRing score={avg} />
               <p className="text-xs text-white/30 mt-3">{records.length} days tracked</p>
             </div>
           </div>
+
+          {/* Discipline card */}
+          {todayLogged && (
+            <div className="glass p-4 flex items-center gap-4">
+              <span className="text-2xl">🎯</span>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-white">Discipline Index</p>
+                <p className="text-xs text-white/30">Based on last 7 days consistency</p>
+              </div>
+              <div className="text-right">
+                <p className="text-lg font-bold" style={{ color: getScoreColor(latest.disciplineScore) }}>
+                  {latest.disciplineScore}/10
+                </p>
+                <p className="text-xs text-white/30">×{latest.disciplineMultiplier}</p>
+              </div>
+            </div>
+          )}
 
           {/* Trend */}
           <div className="glass p-5">
@@ -135,17 +145,14 @@ export default function DashboardPage() {
           </div>
 
           {/* Radar */}
-          {todayLogged && (
+          {radarRecord && (
             <div className="glass p-5">
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="text-sm font-semibold text-white">Today's Breakdown</h3>
-                <span className="text-xs text-white/30">All dimensions</span>
-              </div>
-              <RadarChartComp record={latest} />
+              <h3 className="text-sm font-semibold text-white mb-2">Today's Breakdown</h3>
+              <RadarChartComp record={radarRecord} />
             </div>
           )}
 
-          {/* Stats row */}
+          {/* Stats */}
           {records.length >= 3 && (() => {
             const best = Math.max(...records.map(r => r.totalScore))
             const streak = (() => {
@@ -161,7 +168,7 @@ export default function DashboardPage() {
                   { label: 'Best Score', value: best.toFixed(1), icon: '🏆' },
                   { label: 'Days Tracked', value: records.length, icon: '📅' },
                   { label: 'Good Streak', value: `${streak}d`, icon: '🔥' },
-                ].map((stat) => (
+                ].map(stat => (
                   <div key={stat.label} className="glass p-3.5 text-center">
                     <p className="text-xl mb-1">{stat.icon}</p>
                     <p className="text-lg font-bold text-white">{stat.value}</p>

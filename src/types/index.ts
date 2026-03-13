@@ -1,26 +1,33 @@
 export type UserStatus = 'working' | 'studying'
 
-export interface WeightProfile {
-  sleep: number
+export interface Goals {
+  sleepBedtime: string   // "23:00"
+  sleepWaketime: string  // "07:00"
+  waterTarget: number
+  exerciseTarget: number
+  readingTarget: number
+  learningTarget: number
+}
+
+export interface DailyInput {
+  bedtime: string
+  waketime: string
   water: number
-  discipline: number
   exercise: number
   reading: number
   learning: number
 }
 
-export interface ScoreInput {
-  sleep: number
-  water: number
-  discipline: number
-  exercise: number
-  reading: number
-  learning: number
-}
-
-export interface DailyRecord extends ScoreInput {
+export interface DailyRecord extends DailyInput {
   id: string
   date: string
+  sleepScore: number
+  waterScore: number
+  exerciseScore: number
+  readingScore: number
+  learningScore: number
+  disciplineScore: number
+  disciplineMultiplier: number
   totalScore: number
 }
 
@@ -32,13 +39,10 @@ export interface UserProfile {
   status: UserStatus
 }
 
-export const DIMENSIONS = [
-  { key: 'sleep', label: 'Sleep' },
-  { key: 'water', label: 'Water' },
-  { key: 'discipline', label: 'Discipline' },
-  { key: 'exercise', label: 'Exercise' },
-  { key: 'reading', label: 'Reading' },
-  { key: 'learning', label: 'Learning' },
+export const SCORE_DIMENSIONS = [
+  { key: 'sleepScore',    label: 'Sleep',    icon: '🌙' },
+  { key: 'waterScore',    label: 'Water',    icon: '💧' },
+  { key: 'exerciseScore', label: 'Exercise', icon: '⚡' },
+  { key: 'readingScore',  label: 'Reading',  icon: '📖' },
+  { key: 'learningScore', label: 'Learning', icon: '🧠' },
 ] as const
-
-export type DimensionKey = typeof DIMENSIONS[number]['key']

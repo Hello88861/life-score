@@ -17,22 +17,61 @@ model User {
   status    String        // "working" | "studying"
   createdAt DateTime      @default(now())
   records   DailyRecord[]
+  goals     Goals?
+  tasks     Task[]
+}
+
+model Goals {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  sleepBedtime   String   // "23:00" target bedtime
+  sleepWaketime  String   // "07:00" target wake time
+  waterTarget    Int      // glasses per day
+  exerciseTarget Int      // minutes per day
+  readingTarget  Int      // minutes per day
+  learningTarget Int      // minutes per day
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model DailyRecord {
-  id         String   @id @default(cuid())
-  userId     String
-  date       DateTime @db.Date
-  sleep      Int
-  water      Int
-  discipline Int
-  exercise   Int
-  reading    Int
-  learning   Int
-  totalScore Float
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                  String   @id @default(cuid())
+  userId              String
+  date                DateTime @db.Date
+  // Actual values logged by user
+  bedtime             String   // "23:05" actual bedtime
+  waketime            String   // "07:10" actual wake time
+  water               Int      // actual glasses
+  exercise            Int      // actual minutes
+  reading             Int      // actual minutes
+  learning            Int      // actual minutes
+  // Auto-computed scores (1-10)
+  sleepScore          Float
+  waterScore          Float
+  exerciseScore       Float
+  readingScore        Float
+  learningScore       Float
+  disciplineScore     Float
+  disciplineMultiplier Float
+  totalScore          Float
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, date])
+}
+
+model Task {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  category  String   @default("general")
+  done      Boolean  @default(false)
+  date      String   // YYYY-MM-DD
+  time      String   @default("")
+  urgent    Boolean  @default(false)
+  important Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
