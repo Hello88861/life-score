@@ -8,12 +8,12 @@ import { getScoreColor, getScoreLabel } from '@/lib/weights'
 import type { DailyRecord } from '@/types'
 
 const DIMS = [
-  { key: 'sleep', label: 'Sleep', icon: '🌙' },
-  { key: 'water', label: 'Water', icon: '💧' },
-  { key: 'discipline', label: 'Discipline', icon: '🎯' },
-  { key: 'exercise', label: 'Exercise', icon: '⚡' },
-  { key: 'reading', label: 'Reading', icon: '📖' },
-  { key: 'learning', label: 'Learning', icon: '🧠' },
+  { key: 'sleepScore', label: 'Sleep', icon: '🌙' },
+  { key: 'waterScore', label: 'Water', icon: '💧' },
+  { key: 'disciplineScore', label: 'Discipline', icon: '🎯' },
+  { key: 'exerciseScore', label: 'Exercise', icon: '⚡' },
+  { key: 'readingScore', label: 'Reading', icon: '📖' },
+  { key: 'learningScore', label: 'Learning', icon: '🧠' },
 ] as const
 
 function MiniBar({ value }: { value: number }) {
