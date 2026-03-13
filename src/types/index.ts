@@ -1,5 +1,23 @@
 export type UserStatus = 'working' | 'studying'
 
+export interface WeightProfile {
+  sleep: number
+  water: number
+  discipline: number
+  exercise: number
+  reading: number
+  learning: number
+}
+
+export interface ScoreInput {
+  sleep: number
+  water: number
+  discipline: number
+  exercise: number
+  reading: number
+  learning: number
+}
+
 export interface Goals {
   sleepBedtime: string   // "23:00"
   sleepWaketime: string  // "07:00"
