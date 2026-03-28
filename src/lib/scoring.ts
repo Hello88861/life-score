@@ -17,15 +17,15 @@ function timeDiff(actual: string, target: string): number {
 // ─── Dimension scorers ────────────────────────────────────────
 
 export function scoreSleep(bedtime: string, waketime: string, goals: Goals): number {
-  // Bedtime deviation score
-  const bedDiff = Math.abs(timeDiff(bedtime, goals.sleepBedtime))
+  // Only penalize late bedtime, not early
+  const bedPenalty = Math.max(0, timeDiff(bedtime, goals.sleepBedtime))
   const bedScore =
-    bedDiff <= 5 ? 10 :
-    bedDiff <= 10 ? 9 :
-    bedDiff <= 20 ? 8 :
-    bedDiff <= 30 ? 7 :
-    bedDiff <= 45 ? 5 :
-    bedDiff <= 60 ? 3 : 1
+    bedPenalty <= 5 ? 10 :
+    bedPenalty <= 10 ? 9 :
+    bedPenalty <= 20 ? 8 :
+    bedPenalty <= 30 ? 7 :
+    bedPenalty <= 45 ? 5 :
+    bedPenalty <= 60 ? 3 : 1
 
   // Sleep duration score
   const targetDuration = timeDiff(goals.sleepWaketime, goals.sleepBedtime) + (
@@ -100,7 +100,7 @@ export function calcDisciplineMultiplier(recentRecords: DailyRecord[]): {
 
   const normalized = weightedCompletion / weightSum  // 0~1
   const disciplineScore = Math.round(normalized * 10 * 10) / 10
-  const multiplier = Math.round((0.8 + normalized * 0.4) * 100) / 100
+  const multiplier = Math.round((1.0 + normalized * 0.2) * 100) / 100
 
   return { multiplier, disciplineScore }
 }
