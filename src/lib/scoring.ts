@@ -42,7 +42,9 @@ export function scoreSleep(bedtime: string, waketime: string, goals: Goals): num
     durDiff <= 60 ? 5 :
     durDiff <= 90 ? 3 : 1
 
-  return Math.round((bedScore * 0.6 + durScore * 0.4) * 10) / 10
+  // On time → perfect score; late → duration factors in
+  const durWeight = bedPenalty <= 5 ? 0 : 0.4
+  return Math.round((bedScore * (1 - durWeight) + durScore * durWeight) * 10) / 10
 }
 
 export function scoreQuantity(actual: number, target: number): number {
